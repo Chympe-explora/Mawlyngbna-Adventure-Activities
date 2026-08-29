@@ -192,7 +192,7 @@ function renderLabels() {
   setText("ifscRowLabel", L.ifscRowLabel);
   setText("payQrHeading", L.payQrHeading);
   setText("scanAndPayText", L.scanAndPayText);
-  setText("downloadQrBtn", L.downloadQrBtn);
+  setText("qrDownloadBtn", L.downloadQrBtn);
   setText("copyBtnUpi2", L.copyUpiBtn);
 
   ["copyBtnUpi", "copyBtnAcc", "copyBtnIfsc"].forEach(id => setText(id, L.copyBtnText));
