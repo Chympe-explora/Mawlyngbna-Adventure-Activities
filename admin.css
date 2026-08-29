@@ -61,6 +61,15 @@
   margin-bottom: 18px;
 }
 .admin-section h3 { margin-top: 0; }
+.admin-section h4 {
+  margin: 22px 0 2px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+  font-size: 14px;
+  color: var(--accent);
+}
+.admin-section h4:first-of-type { margin-top: 12px; padding-top: 0; border-top: none; }
+.section-hint { font-size: 13px; color: var(--text-muted); margin: -6px 0 14px; }
 .admin-section label {
   display: block;
   font-size: 13px;

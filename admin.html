@@ -123,6 +123,172 @@
       <label class="toggle-row" style="margin-top:12px;"><input type="checkbox" id="a_cp_perperson"> Charge per person (off = one flat price for the whole booking)</label>
     </section>
 
+    <!-- Text on the form -->
+    <section class="admin-section">
+      <h3>Text on the form</h3>
+      <p class="section-hint">Every label, placeholder, note, error message and button on the booking page. Change anything here and it updates the live site — nothing is hard-coded.</p>
+
+      <h4>Top of page 1</h4>
+      <label>Intro line under the title</label>
+      <input type="text" id="t_topNote">
+      <label>"* Indicates required question" line</label>
+      <input type="text" id="t_requiredNote">
+      <label>Page indicator text on page 1 (top-right)</label>
+      <input type="text" id="t_page1Indicator">
+      <label>Page indicator text on page 2 (top-right)</label>
+      <input type="text" id="t_page2Indicator">
+
+      <h4>Name</h4>
+      <label>Question label</label>
+      <input type="text" id="t_nameLabel">
+      <label>Placeholder text inside the box</label>
+      <input type="text" id="t_namePlaceholder">
+      <label>Error message (shown if left blank)</label>
+      <input type="text" id="t_nameError">
+
+      <h4>WhatsApp Number</h4>
+      <label>Question label</label>
+      <input type="text" id="t_whatsappLabel">
+      <label>Placeholder text inside the box</label>
+      <input type="text" id="t_whatsappPlaceholder">
+      <label>Error message</label>
+      <input type="text" id="t_whatsappError">
+
+      <h4>Date of visit</h4>
+      <label>Question label</label>
+      <input type="text" id="t_dateLabel">
+      <label>Error message</label>
+      <input type="text" id="t_dateError">
+
+      <h4>Participants &amp; children</h4>
+      <label>"Number of participants" label</label>
+      <input type="text" id="t_participantsLabel">
+      <label>"Number of child" label</label>
+      <input type="text" id="t_childrenLabel">
+      <label>Child-age note (the line about Home Stay pricing)</label>
+      <input type="text" id="t_childAgeNote">
+      <label>Per-child age label — use {n} where the child number should go</label>
+      <input type="text" id="t_childAgeLabel">
+      <label>Age box placeholder</label>
+      <input type="text" id="t_childAgePlaceholder">
+
+      <h4>Package question</h4>
+      <label>Question label</label>
+      <input type="text" id="t_packageQuestionLabel">
+      <label>Error message</label>
+      <input type="text" id="t_packageError">
+      <label>"per person" text shown after each price</label>
+      <input type="text" id="t_perPersonText">
+
+      <h4>Home Stay &amp; Camping</h4>
+      <label>"note : " prefix shown before each add-on's note</label>
+      <input type="text" id="t_notePrefix">
+      <label>Home Stay — "yes" option text</label>
+      <input type="text" id="t_homestayYesOption">
+      <label>Home Stay — "no" option text</label>
+      <input type="text" id="t_homestayNoOption">
+      <label>Camping — "yes" option text</label>
+      <input type="text" id="t_campingYesOption">
+      <label>Camping — "no" option text</label>
+      <input type="text" id="t_campingNoOption">
+
+      <h4>Special request</h4>
+      <label>Question label</label>
+      <input type="text" id="t_specialLabel">
+      <label>Placeholder text</label>
+      <input type="text" id="t_specialPlaceholder">
+
+      <h4>Payment mode question (page 1)</h4>
+      <label>Question label</label>
+      <input type="text" id="t_paymentModeLabel">
+      <label>Error message</label>
+      <input type="text" id="t_paymentModeError">
+      <label>"UPI ID" option text</label>
+      <input type="text" id="t_payUpiOption">
+      <label>"Bank Transfer" option text</label>
+      <input type="text" id="t_payBankOption">
+      <label>"QR Code" option text</label>
+      <input type="text" id="t_payQrOption">
+
+      <h4>Page 1 buttons</h4>
+      <label>"Clear form" button</label>
+      <input type="text" id="t_clearFormBtn">
+      <label>"Next" button</label>
+      <input type="text" id="t_nextBtn">
+
+      <h4>Page 2 — Payment heading</h4>
+      <label>Page 2 title (shows the chosen method after it, e.g. "Payment — UPI ID")</label>
+      <input type="text" id="t_page2Title">
+
+      <h4>Page 2 — UPI detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payUpiHeading">
+      <label>"UPI ID :" row label</label>
+      <input type="text" id="t_upiIdRowLabel">
+
+      <h4>Page 2 — Bank detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payBankHeading">
+      <label>"Account :" row label</label>
+      <input type="text" id="t_accountRowLabel">
+      <label>"IFSC :" row label</label>
+      <input type="text" id="t_ifscRowLabel">
+
+      <h4>Page 2 — QR detail block</h4>
+      <label>Heading</label>
+      <input type="text" id="t_payQrHeading">
+      <label>"scan and pay" line</label>
+      <input type="text" id="t_scanAndPayText">
+      <label>"Download QR" button</label>
+      <input type="text" id="t_downloadQrBtn">
+      <label>"Copy UPI ID" button (under the QR)</label>
+      <input type="text" id="t_copyUpiBtn">
+
+      <h4>Copy buttons</h4>
+      <label>Default "Copy" button text (UPI ID / Account / IFSC rows)</label>
+      <input type="text" id="t_copyBtnText">
+      <label>Text shown briefly after copying</label>
+      <input type="text" id="t_copiedBtnText">
+
+      <h4>Live total box</h4>
+      <label>"Estimated total" heading</label>
+      <input type="text" id="t_estimatedTotalLabel">
+      <label>"Total" row label</label>
+      <input type="text" id="t_totalLabel">
+      <label>Footer note under the total</label>
+      <input type="text" id="t_totalFooterNote">
+      <label>Note shown before a package is picked</label>
+      <input type="text" id="t_emptyBreakdownNote">
+
+      <h4>Page 2 buttons</h4>
+      <label>"Back" button</label>
+      <input type="text" id="t_backBtn">
+      <label>"Submit" button</label>
+      <input type="text" id="t_submitBtn">
+
+      <h4>Pop-up messages</h4>
+      <label>Message when required fields are missing</label>
+      <input type="text" id="t_fillRequiredToast">
+      <label>Prefix shown before whatever was copied</label>
+      <input type="text" id="t_copiedToastPrefix">
+
+      <h4>Price breakdown wording</h4>
+      <label>Word for 1 adult</label>
+      <input type="text" id="t_adultWord">
+      <label>Word for 2+ adults</label>
+      <input type="text" id="t_adultsWord">
+      <label>Word for 1 child</label>
+      <input type="text" id="t_childWord">
+      <label>Word for 2+ children</label>
+      <input type="text" id="t_childrenWord">
+      <label>Word used for "free"</label>
+      <input type="text" id="t_freeText">
+      <label>Home Stay chargeable-age range text — use {from} for the first paying age</label>
+      <input type="text" id="t_homeStayAgedRangeText">
+      <label>Home Stay free-age text — use {age} for the free-up-to age</label>
+      <input type="text" id="t_homeStayFreeAgeText">
+    </section>
+
     <!-- Payment -->
     <section class="admin-section">
       <h3>Payment details</h3>

@@ -28,6 +28,7 @@
      HOW MANY PEOPLE       → min/max people a visitor can pick
      HOME STAY             → the home stay add-on
      CAMPING                → the camping add-on
+     TEXT ON THE FORM        → every single word/sentence visitors see
      PAYMENT DETAILS        → your UPI / bank / QR info
      ADMIN PASSWORD          → the password for the admin dashboard
    ================================================================ */
@@ -156,6 +157,130 @@ const DEFAULT_CONFIG = {
     price: 1500,
     note: "camping and bon fire, per person",
     perPerson: true
+  },
+
+
+  /* ---------------------------------------------------------------
+     TEXT ON THE FORM
+     EVERY word and sentence a visitor can see on the booking page
+     lives here — every label, placeholder, note, error message,
+     and button. Nothing is hard-coded in the HTML anymore: change
+     any line below (between the quotes) and that exact text
+     changes on the live site.
+
+     Grouped by where it appears, top of the page to bottom. Leave
+     any line exactly as-is if you don't want to change it.
+  ----------------------------------------------------------------- */
+  labels: {
+
+    // ----- Top of page 1 -----
+    topNote: "This form collects your name, WhatsApp number and booking details so we can confirm your adventure.",
+    requiredNote: "* Indicates required question",
+    page1Indicator: "Page 1 of 2",
+    page2Indicator: "Page 2 of 2",
+
+    // ----- Name -----
+    nameLabel: "Name",
+    namePlaceholder: "Your answer",
+    nameError: "Please enter your name.",
+
+    // ----- WhatsApp number -----
+    whatsappLabel: "WhatsApp Number",
+    whatsappPlaceholder: "e.g. 9863012345",
+    whatsappError: "Please enter a valid phone number (at least 10 digits).",
+
+    // ----- Date of visit -----
+    dateLabel: "Date of visit",
+    dateError: "Please choose a date.",
+
+    // ----- Participants / children -----
+    participantsLabel: "Number of participants",
+    childrenLabel: "Number of child",
+    // This is the note that appears once "Number of child" is above
+    // 0 — this is the line circled in your screenshot.
+    childAgeNote: "Age of each child (needed to work out Home Stay pricing)",
+    // {n} is replaced automatically with 1, 2, 3... for each child.
+    childAgeLabel: "Child {n} age",
+    childAgePlaceholder: "age",
+
+    // ----- Package question -----
+    packageQuestionLabel: "Package for Mawlyngbna Adventure",
+    packageError: "Please select a package.",
+    perPersonText: "per person",
+
+    // ----- Home Stay / Camping shared -----
+    // The "note : " that comes right before each add-on's note text.
+    notePrefix: "note : ",
+    // The yes/no radio options for Home Stay and Camping (kept as
+    // separate lines since the original form capitalized them
+    // differently — change either one freely).
+    homestayYesOption: "yes",
+    homestayNoOption: "No",
+    campingYesOption: "yes",
+    campingNoOption: "no",
+
+    // ----- Special request -----
+    specialLabel: "Any special request",
+    specialPlaceholder: "Your answer",
+
+    // ----- Payment mode question (page 1) -----
+    paymentModeLabel: "Payment mode",
+    paymentModeError: "Please select a payment mode.",
+    payUpiOption: "UPI ID",
+    payBankOption: "Bank Transfer",
+    payQrOption: "QR Code",
+
+    // ----- Page 1 buttons -----
+    clearFormBtn: "Clear form",
+    nextBtn: "Next",
+
+    // ----- Page 2 heading -----
+    page2Title: "Payment",
+
+    // ----- Page 2: UPI detail block -----
+    payUpiHeading: "UPI ID",
+    upiIdRowLabel: "UPI ID :",
+
+    // ----- Page 2: Bank detail block -----
+    payBankHeading: "Bank Transfer",
+    accountRowLabel: "Account :",
+    ifscRowLabel: "IFSC :",
+
+    // ----- Page 2: QR detail block -----
+    payQrHeading: "QR Code",
+    scanAndPayText: "scan and pay",
+    downloadQrBtn: "Download QR",
+    copyUpiBtn: "Copy UPI ID",
+
+    // ----- Copy buttons (used next to UPI ID / Account / IFSC) -----
+    copyBtnText: "Copy",
+    copiedBtnText: "Copied!",
+
+    // ----- Live total box -----
+    estimatedTotalLabel: "Estimated total",
+    totalLabel: "Total",
+    totalFooterNote: "Final amount will be confirmed with you on WhatsApp.",
+    emptyBreakdownNote: "Select a package to see pricing",
+
+    // ----- Page 2 buttons -----
+    backBtn: "Back",
+    submitBtn: "Submit",
+
+    // ----- Pop-up messages (toasts) -----
+    fillRequiredToast: "Please fill in all required fields.",
+    copiedToastPrefix: "Copied: ",
+
+    // ----- Words used inside the price breakdown lines -----
+    // e.g. "Canyoning × 2 adults" / "Canyoning × 1 child"
+    adultWord: "adult",
+    adultsWord: "adults",
+    childWord: "child",
+    childrenWord: "children",
+    freeText: "free",
+    // {from} becomes childFreeAge + 1 automatically.
+    homeStayAgedRangeText: "(age {from}-18)",
+    // {age} becomes the Home Stay "free at this age or under" number.
+    homeStayFreeAgeText: "(age {age} & under, free)"
   },
 
 

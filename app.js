@@ -34,6 +34,8 @@ function loadConfig() {
 }
 
 const CONFIG = loadConfig();
+// Shorthand used everywhere below to read the editable text strings.
+const L = CONFIG.labels || {};
 
 /* ----------------------------------------------------------------
    Steppers (+ / -) are wired FIRST and on their own, before any
@@ -98,12 +100,15 @@ function renderChildAgeInputs(count) {
 
   wrap.hidden = false;
   list.innerHTML = "";
+  const ageLabelTemplate = L.childAgeLabel ?? "Child {n} age";
+  const agePlaceholder = L.childAgePlaceholder ?? "age";
   for (let i = 0; i < count; i++) {
     const row = document.createElement("div");
     row.className = "child-age-row";
+    const ageLabel = ageLabelTemplate.replace("{n}", String(i + 1));
     row.innerHTML = `
-      <label for="child_age_${i}">Child ${i + 1} age</label>
-      <input type="number" id="child_age_${i}" min="0" max="18" inputmode="numeric" value="${existing[i] ?? ""}" placeholder="age">
+      <label for="child_age_${i}">${ageLabel}</label>
+      <input type="number" id="child_age_${i}" min="0" max="18" inputmode="numeric" value="${existing[i] ?? ""}" placeholder="${agePlaceholder}">
     `;
     row.querySelector("input").addEventListener("input", safeRecalcTotal);
     list.appendChild(row);
@@ -119,6 +124,7 @@ function getChildAges() {
 }
 
 /* ---------------- Everything else, defensively ---------------- */
+try { renderLabels(); } catch (e) { console.error("Label render failed", e); }
 try { renderHeader(); } catch (e) { console.error("Header render failed", e); }
 try { renderPackages(); } catch (e) { console.error("Package render failed", e); }
 try { renderAddonSections(); } catch (e) { console.error("Add-on render failed", e); }
@@ -130,6 +136,77 @@ try { setupNavigation(); } catch (e) { console.error("Page navigation setup fail
 try { setupClearForm(); } catch (e) { console.error("Clear form setup failed", e); }
 try { setupAdminTrigger(); } catch (e) { console.error("Admin trigger setup failed", e); }
 safeRecalcTotal();
+
+/* ---------------- Render every static piece of text on the page ----------------
+   Every label, placeholder, note, error message, and button text a
+   visitor can see comes from CONFIG.labels (config.js), so editing
+   that file — or the Admin Dashboard's "Text on the form" section —
+   changes the live site with nothing hard-coded in the HTML. */
+function setText(id, value) { const el = document.getElementById(id); if (el && value !== undefined) el.textContent = value; }
+function setPlaceholder(id, value) { const el = document.getElementById(id); if (el && value !== undefined) el.placeholder = value; }
+
+function renderLabels() {
+  setText("topNote", L.topNote);
+  setText("requiredNote", L.requiredNote);
+
+  setText("nameLabel", L.nameLabel);
+  setPlaceholder("f_name", L.namePlaceholder);
+  setText("err_name", L.nameError);
+
+  setText("whatsappLabel", L.whatsappLabel);
+  setPlaceholder("f_whatsapp", L.whatsappPlaceholder);
+  setText("err_whatsapp", L.whatsappError);
+
+  setText("dateLabel", L.dateLabel);
+  setText("err_date", L.dateError);
+
+  setText("participantsLabel", L.participantsLabel);
+  setText("childrenLabel", L.childrenLabel);
+  setText("childAgeNote", L.childAgeNote);
+
+  setText("packageQuestionLabel", L.packageQuestionLabel);
+  setText("err_package", L.packageError);
+
+  setText("specialLabel", L.specialLabel);
+  setPlaceholder("f_special", L.specialPlaceholder);
+
+  setText("paymentModeLabel", L.paymentModeLabel);
+  setText("pm_upi_label", L.payUpiOption);
+  setText("pm_bank_label", L.payBankOption);
+  setText("pm_qr_label", L.payQrOption);
+  setText("err_payment", L.paymentModeError);
+
+  setText("hs_yes_label", L.homestayYesOption);
+  setText("hs_no_label", L.homestayNoOption);
+  setText("cp_yes_label", L.campingYesOption);
+  setText("cp_no_label", L.campingNoOption);
+
+  setText("clearFormBtn", L.clearFormBtn);
+  setText("nextBtn", L.nextBtn);
+
+  setText("page2Title", L.page2Title);
+  setText("payUpiHeading", L.payUpiHeading);
+  setText("upiIdRowLabel", L.upiIdRowLabel);
+  setText("payBankHeading", L.payBankHeading);
+  setText("accountRowLabel", L.accountRowLabel);
+  setText("ifscRowLabel", L.ifscRowLabel);
+  setText("payQrHeading", L.payQrHeading);
+  setText("scanAndPayText", L.scanAndPayText);
+  setText("downloadQrBtn", L.downloadQrBtn);
+  setText("copyBtnUpi2", L.copyUpiBtn);
+
+  ["copyBtnUpi", "copyBtnAcc", "copyBtnIfsc"].forEach(id => setText(id, L.copyBtnText));
+
+  setText("estimatedTotalLabel", L.estimatedTotalLabel);
+  setText("totalLabel", L.totalLabel);
+  setText("totalFooterNote", L.totalFooterNote);
+
+  setText("backBtn", L.backBtn);
+  setText("submitBtn", L.submitBtn);
+
+  // Page indicator starts on page 1
+  setText("pageIndicator", L.page1Indicator);
+}
 
 /* ---------------- Render header text ---------------- */
 function renderHeader() {
@@ -147,7 +224,7 @@ function renderPackages() {
     row.className = "choice-row";
     row.innerHTML = `
       <input type="radio" name="package" value="${pkg.id}" id="pkg_${pkg.id}">
-      <label for="pkg_${pkg.id}">${pkg.label} <span class="choice-price">= \u20B9${pkg.price} per person</span></label>
+      <label for="pkg_${pkg.id}">${pkg.label} <span class="choice-price">= \u20B9${pkg.price} ${L.perPersonText ?? "per person"}</span></label>
     `;
     packageListEl.appendChild(row);
     row.querySelector("input").addEventListener("change", () => {
@@ -166,19 +243,18 @@ function renderAddonSections() {
     homestayCard.style.display = "none";
   } else {
     const hs = CONFIG.homestay;
+    const prefix = L.notePrefix ?? "note : ";
     document.getElementById("homestayTitle").textContent = hs.title;
-    document.getElementById("homestayNote").textContent =
-      `\u20B9${hs.adultBasePrice} for the 1st adult, +\u20B9${hs.additionalAdultPrice} per extra adult. ` +
-      `Children age ${hs.childFreeAge + 1}-18: \u20B9${hs.childPrice} each. Age ${hs.childFreeAge} & under: free.\n` +
-      `note : ${hs.note}`;
+    document.getElementById("homestayNote").textContent = `${prefix}${hs.note}`;
   }
 
   if (!CONFIG.camping.enabled) {
     campingCard.style.display = "none";
   } else {
+    const prefix = L.notePrefix ?? "note : ";
     document.getElementById("campingTitle").textContent = CONFIG.camping.title;
     document.getElementById("campingNote").textContent =
-      `note : ${CONFIG.camping.note} \u20B9 ${CONFIG.camping.price}`;
+      `${prefix}${CONFIG.camping.note} \u20B9 ${CONFIG.camping.price}`;
   }
 
   document.querySelectorAll('input[name="homestay"], input[name="camping"]').forEach(el => {
@@ -215,19 +291,23 @@ function computeTotal() {
   const lines = [];
   let total = 0;
 
+  const adultWord = participants === 1 ? (L.adultWord ?? "adult") : (L.adultsWord ?? "adults");
+  const childWordFor = n => n === 1 ? (L.childWord ?? "child") : (L.childrenWord ?? "children");
+  const freeText = L.freeText ?? "free";
+
   if (pkg) {
     if (participants > 0) {
       const sub = pkg.price * participants;
-      lines.push({ label: `${pkg.label} \u00d7 ${participants} adult${participants === 1 ? "" : "s"}`, amount: sub });
+      lines.push({ label: `${pkg.label} \u00d7 ${participants} ${adultWord}`, amount: sub });
       total += sub;
     }
     if (children > 0 && childRate > 0) {
       const sub = pkg.price * childRate * children;
       const rateNote = childRate === 1 ? "" : ` (${Math.round(childRate * 100)}% rate)`;
-      lines.push({ label: `${pkg.label} \u00d7 ${children} child${children === 1 ? "" : "ren"}${rateNote}`, amount: sub });
+      lines.push({ label: `${pkg.label} \u00d7 ${children} ${childWordFor(children)}${rateNote}`, amount: sub });
       total += sub;
     } else if (children > 0) {
-      lines.push({ label: `${pkg.label} \u00d7 ${children} child${children === 1 ? "" : "ren"} (free)`, amount: 0 });
+      lines.push({ label: `${pkg.label} \u00d7 ${children} ${childWordFor(children)} (${freeText})`, amount: 0 });
     }
   }
 
@@ -237,7 +317,7 @@ function computeTotal() {
 
     if (participants > 0) {
       const adultSub = (hs.adultBasePrice ?? 0) + Math.max(0, participants - 1) * (hs.additionalAdultPrice ?? 0);
-      lines.push({ label: `${hs.title} \u2014 ${participants} adult${participants === 1 ? "" : "s"}`, amount: adultSub });
+      lines.push({ label: `${hs.title} \u2014 ${participants} ${adultWord}`, amount: adultSub });
       total += adultSub;
     }
 
@@ -252,11 +332,13 @@ function computeTotal() {
       }
       if (chargeable > 0) {
         const childSub = chargeable * (hs.childPrice ?? 0);
-        lines.push({ label: `${hs.title} \u2014 ${chargeable} child${chargeable === 1 ? "" : "ren"} (age ${freeAge + 1}-18)`, amount: childSub });
+        const rangeText = (L.homeStayAgedRangeText ?? "(age {from}-18)").replace("{from}", String(freeAge + 1));
+        lines.push({ label: `${hs.title} \u2014 ${chargeable} ${childWordFor(chargeable)} ${rangeText}`, amount: childSub });
         total += childSub;
       }
       if (free > 0) {
-        lines.push({ label: `${hs.title} \u2014 ${free} child${free === 1 ? "" : "ren"} (age ${freeAge} & under, free)`, amount: 0 });
+        const freeAgeText = (L.homeStayFreeAgeText ?? "(age {age} & under, free)").replace("{age}", String(freeAge));
+        lines.push({ label: `${hs.title} \u2014 ${free} ${childWordFor(free)} ${freeAgeText}`, amount: 0 });
       }
     }
   }
@@ -278,7 +360,7 @@ function recalcTotal() {
   if (!breakdownEl || !totalEl) return;
 
   if (lines.length === 0) {
-    breakdownEl.innerHTML = `<div class="b-empty">Select a package to see pricing</div>`;
+    breakdownEl.innerHTML = `<div class="b-empty">${L.emptyBreakdownNote ?? "Select a package to see pricing"}</div>`;
   } else {
     breakdownEl.innerHTML = lines.map(l =>
       `<div class="b-row"><span>${l.label}</span><span class="amt">${formatRupees(l.amount)}</span></div>`
@@ -289,7 +371,11 @@ function recalcTotal() {
 function safeRecalcTotal() { try { recalcTotal(); } catch (e) { console.error("recalcTotal failed", e); } }
 
 /* ---------------- Payment mode → page 2 reveal ---------------- */
-const PAY_LABELS = { upi: "UPI ID", bank: "Bank Transfer", qr: "QR Code" };
+const PAY_LABELS = {
+  upi: L.payUpiOption ?? "UPI ID",
+  bank: L.payBankOption ?? "Bank Transfer",
+  qr: L.payQrOption ?? "QR Code"
+};
 
 function setupPaymentReveal() {
   document.querySelectorAll('input[name="paymentMode"]').forEach(radio => {
@@ -310,7 +396,8 @@ function revealChosenPaymentDetail() {
   detailBank.hidden = mode !== "bank";
   detailQr.hidden = mode !== "qr";
   const title = document.getElementById("page2Title");
-  if (title) title.textContent = mode ? `Payment — ${PAY_LABELS[mode]}` : "Payment";
+  const basePage2Title = L.page2Title ?? "Payment";
+  if (title) title.textContent = mode ? `${basePage2Title} \u2014 ${PAY_LABELS[mode]}` : basePage2Title;
 }
 
 /* ---------------- Copy buttons ---------------- */
@@ -338,10 +425,10 @@ function setupCopyButtons() {
         document.execCommand("copy");
         document.body.removeChild(ta);
       }
-      showToast("Copied: " + text);
+      showToast((L.copiedToastPrefix ?? "Copied: ") + text);
       btn.classList.add("copied");
       const original = btn.textContent;
-      btn.textContent = "Copied!";
+      btn.textContent = L.copiedBtnText ?? "Copied!";
       setTimeout(() => { btn.classList.remove("copied"); btn.textContent = original; }, 1400);
     });
   });
@@ -419,7 +506,7 @@ function showPage(pageId) {
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.getElementById(pageId).classList.add("active");
   if (pageIndicator) {
-    pageIndicator.textContent = pageId === "page-2" ? "Page 2 of 2" : "Page 1 of 2";
+    pageIndicator.textContent = pageId === "page-2" ? (L.page2Indicator ?? "Page 2 of 2") : (L.page1Indicator ?? "Page 1 of 2");
   }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -432,7 +519,7 @@ function setupNavigation() {
 
   document.getElementById("nextBtn").addEventListener("click", () => {
     if (!validatePage1()) {
-      showToast("Please fill in all required fields.");
+      showToast(L.fillRequiredToast ?? "Please fill in all required fields.");
       return;
     }
     revealChosenPaymentDetail();
@@ -450,7 +537,7 @@ function setupNavigation() {
 
     // Defensive re-check in case the visitor navigated back and cleared something.
     if (!validatePage1()) {
-      showToast("Please fill in all required fields.");
+      showToast(L.fillRequiredToast ?? "Please fill in all required fields.");
       showPage("page-1");
       return;
     }

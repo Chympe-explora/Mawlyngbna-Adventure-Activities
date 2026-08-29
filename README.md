@@ -19,8 +19,11 @@ it's plain HTML/CSS/JS, so it deploys straight to GitHub Pages for free.
 
 Almost everything editable lives at the top of **`config.js`** in one place:
 title text, the WhatsApp number, the list of packages and prices, the
-home stay / camping price and notes, and the UPI/bank/QR payment details.
-Change a value, save the file, and re-deploy (or just refresh if testing
+home stay / camping price and notes, the UPI/bank/QR payment details —
+and, under `labels`, **every single word and sentence a visitor can see**
+on the booking page (every field label, placeholder, note, error
+message, and button). Nothing is hard-coded in the HTML. Change a
+value, save the file, and re-deploy (or just refresh if testing
 locally) — no need to touch the HTML or CSS.
 
 You can also edit all of this live, from your phone or laptop, through the
@@ -64,6 +67,9 @@ github.com in the browser — no git command line needed.
     price per child, and the age children stay free up to)
   - Edit the **UPI ID, bank account, IFSC, and QR image URL**
   - Change the admin password
+  - Edit **every piece of text on the form** — labels, placeholders,
+    error messages, notes, and buttons — under the "Text on the form"
+    section
 
 ### Important limitation — please read
 

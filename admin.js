@@ -22,6 +22,7 @@ function loadConfig() {
       camping: { ...DEFAULT_CONFIG.camping, ...(parsed.camping || {}) },
       pricing: { ...DEFAULT_CONFIG.pricing, ...(parsed.pricing || {}) },
       limits: { ...DEFAULT_CONFIG.limits, ...(parsed.limits || {}) },
+      labels: { ...DEFAULT_CONFIG.labels, ...(parsed.labels || {}) },
       packages: parsed.packages && parsed.packages.length ? parsed.packages : DEFAULT_CONFIG.packages
     };
   } catch (e) {
@@ -134,7 +135,21 @@ function populateForm() {
 
   document.getElementById("a_password").value = CONFIG.adminPassword;
 
+  populateLabelFields();
   renderPackageEditor();
+}
+
+/* ---------------- Text-on-the-form fields (CONFIG.labels) ----------------
+   Every key in DEFAULT_CONFIG.labels gets its own input with the id
+   "t_" + key (e.g. labels.nameLabel <-> #t_nameLabel). Looping over
+   the keys here means a new label added to config.js only needs a
+   matching input added to admin.html — nothing else to wire up. */
+function populateLabelFields() {
+  const labels = CONFIG.labels || {};
+  Object.keys(DEFAULT_CONFIG.labels || {}).forEach(key => {
+    const el = document.getElementById("t_" + key);
+    if (el) el.value = labels[key] ?? DEFAULT_CONFIG.labels[key] ?? "";
+  });
 }
 
 /* ---------------- Package editor (add / edit / remove / reorder) ---------------- */
@@ -222,6 +237,12 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   CONFIG.payment.qrImageUrl = document.getElementById("a_pay_qr").value.trim();
 
   CONFIG.adminPassword = document.getElementById("a_password").value.trim() || CONFIG.adminPassword;
+
+  CONFIG.labels = CONFIG.labels || {};
+  Object.keys(DEFAULT_CONFIG.labels || {}).forEach(key => {
+    const el = document.getElementById("t_" + key);
+    if (el) CONFIG.labels[key] = el.value;
+  });
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(CONFIG));
   showToast("Saved. The live form on this browser is now updated.");
