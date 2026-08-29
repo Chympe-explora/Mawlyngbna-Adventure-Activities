@@ -64,6 +64,7 @@ function setupSteppers() {
       input.value = String(val);
       decBtn.disabled = val <= min;
       incBtn.disabled = val >= max;
+      if (key === "children") { try { renderChildAgeInputs(val); } catch (e) { console.error("Child age render failed", e); } }
       safeRecalcTotal();
     }
     decBtn.addEventListener("click", () => update((parseInt(input.value, 10) || 0) - 1));
@@ -73,6 +74,49 @@ function setupSteppers() {
   });
 }
 setupSteppers();
+renderChildAgeInputs(parseInt(document.getElementById("f_children")?.value, 10) || 0);
+
+/* ----------------------------------------------------------------
+   Per-child age inputs. Shown under "Number of child" whenever
+   that count is above 0 — one small age box per child. Ages are
+   used to work out Home Stay pricing (children childFreeAge or
+   younger are free, older children pay childPrice).
+------------------------------------------------------------------- */
+function renderChildAgeInputs(count) {
+  const wrap = document.getElementById("childAgesWrap");
+  const list = document.getElementById("childAgesList");
+  if (!wrap || !list) return;
+
+  // Preserve whatever ages are already typed in before rebuilding.
+  const existing = Array.from(list.querySelectorAll("input")).map(inp => inp.value);
+
+  if (!count || count <= 0) {
+    wrap.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+
+  wrap.hidden = false;
+  list.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement("div");
+    row.className = "child-age-row";
+    row.innerHTML = `
+      <label for="child_age_${i}">Child ${i + 1} age</label>
+      <input type="number" id="child_age_${i}" min="0" max="18" inputmode="numeric" value="${existing[i] ?? ""}" placeholder="age">
+    `;
+    row.querySelector("input").addEventListener("input", safeRecalcTotal);
+    list.appendChild(row);
+  }
+}
+
+/** Reads the ages currently entered for each child (null if left blank/invalid). */
+function getChildAges() {
+  return Array.from(document.querySelectorAll("#childAgesList input")).map(inp => {
+    const v = parseInt(inp.value, 10);
+    return Number.isNaN(v) ? null : v;
+  });
+}
 
 /* ---------------- Everything else, defensively ---------------- */
 try { renderHeader(); } catch (e) { console.error("Header render failed", e); }
@@ -121,9 +165,12 @@ function renderAddonSections() {
   if (!CONFIG.homestay.enabled) {
     homestayCard.style.display = "none";
   } else {
-    document.getElementById("homestayTitle").textContent = CONFIG.homestay.title;
+    const hs = CONFIG.homestay;
+    document.getElementById("homestayTitle").textContent = hs.title;
     document.getElementById("homestayNote").textContent =
-      `${CONFIG.homestay.title} \u20B9 ${CONFIG.homestay.price}\nnote : ${CONFIG.homestay.note}`;
+      `\u20B9${hs.adultBasePrice} for the 1st adult, +\u20B9${hs.additionalAdultPrice} per extra adult. ` +
+      `Children age ${hs.childFreeAge + 1}-18: \u20B9${hs.childPrice} each. Age ${hs.childFreeAge} & under: free.\n` +
+      `note : ${hs.note}`;
   }
 
   if (!CONFIG.camping.enabled) {
@@ -185,10 +232,33 @@ function computeTotal() {
   }
 
   if (homestayOn) {
-    const headcount = participants + children;
-    const sub = CONFIG.homestay.perPerson ? CONFIG.homestay.price * headcount : CONFIG.homestay.price;
-    lines.push({ label: CONFIG.homestay.perPerson ? `${CONFIG.homestay.title} \u00d7 ${headcount}` : CONFIG.homestay.title, amount: sub });
-    total += sub;
+    const hs = CONFIG.homestay;
+    const freeAge = hs.childFreeAge ?? 6;
+
+    if (participants > 0) {
+      const adultSub = (hs.adultBasePrice ?? 0) + Math.max(0, participants - 1) * (hs.additionalAdultPrice ?? 0);
+      lines.push({ label: `${hs.title} \u2014 ${participants} adult${participants === 1 ? "" : "s"}`, amount: adultSub });
+      total += adultSub;
+    }
+
+    if (children > 0) {
+      const ages = getChildAges();
+      let chargeable = 0;
+      let free = 0;
+      for (let i = 0; i < children; i++) {
+        const age = ages[i];
+        if (age !== null && age !== undefined && age <= freeAge) free += 1;
+        else chargeable += 1;
+      }
+      if (chargeable > 0) {
+        const childSub = chargeable * (hs.childPrice ?? 0);
+        lines.push({ label: `${hs.title} \u2014 ${chargeable} child${chargeable === 1 ? "" : "ren"} (age ${freeAge + 1}-18)`, amount: childSub });
+        total += childSub;
+      }
+      if (free > 0) {
+        lines.push({ label: `${hs.title} \u2014 ${free} child${free === 1 ? "" : "ren"} (age ${freeAge} & under, free)`, amount: 0 });
+      }
+    }
   }
 
   if (campingOn) {
@@ -325,6 +395,15 @@ function validatePage1() {
   document.getElementById("err_payment").classList.toggle("show", !payChosen);
   if (!payChosen) ok = false;
 
+  const childCount = parseInt(document.getElementById("f_children").value, 10) || 0;
+  if (childCount > 0) {
+    const ages = getChildAges();
+    document.querySelectorAll("#childAgesList input").forEach((inp, i) => {
+      inp.classList.toggle("invalid", ages[i] === null);
+    });
+    if (ages.some(a => a === null)) ok = false;
+  }
+
   return ok;
 }
 
@@ -397,9 +476,13 @@ function setupNavigation() {
       `WhatsApp Number: ${whatsapp}`,
       `Date of visit: ${date}`,
       `Number of participants: ${participants}`,
-      `Number of child: ${children}`,
-      `Package: ${pkg.label} (\u20B9${pkg.price} per person)`
+      `Number of child: ${children}`
     ];
+    if (parseInt(children, 10) > 0) {
+      const ages = getChildAges().map(a => (a === null ? "?" : a));
+      lines.push(`Child ages: ${ages.join(", ")}`);
+    }
+    lines.push(`Package: ${pkg.label} (\u20B9${pkg.price} per person)`);
     if (homestay !== null) lines.push(`Home stay: ${homestay}`);
     if (camping !== null) lines.push(`Camping: ${camping}`);
     if (special) lines.push(`Special request: ${special}`);
@@ -432,6 +515,7 @@ function setupClearForm() {
       if (decBtn) decBtn.disabled = true;
       if (incBtn) incBtn.disabled = false;
     });
+    renderChildAgeInputs(0);
     document.getElementById("detailUpi").hidden = true;
     document.getElementById("detailBank").hidden = true;
     document.getElementById("detailQr").hidden = true;

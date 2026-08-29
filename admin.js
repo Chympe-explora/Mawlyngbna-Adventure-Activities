@@ -57,10 +57,17 @@ document.getElementById("loginBtn").addEventListener("click", tryLogin);
 document.getElementById("loginPassword").addEventListener("keydown", e => {
   if (e.key === "Enter") tryLogin();
 });
+document.getElementById("showPasswordToggle").addEventListener("change", e => {
+  document.getElementById("loginPassword").type = e.target.checked ? "text" : "password";
+});
 
+/* This used to fail whenever the password had leading/trailing
+   whitespace (easy to pick up from a phone keyboard's autocomplete
+   or autocapitalize bar) because it was compared with no trimming
+   at all. Now both sides are trimmed before comparing. */
 function tryLogin() {
-  const entered = document.getElementById("loginPassword").value;
-  if (entered === CONFIG.adminPassword) {
+  const entered = document.getElementById("loginPassword").value.trim();
+  if (entered.length > 0 && entered === String(CONFIG.adminPassword).trim()) {
     sessionStorage.setItem(SESSION_KEY, "1");
     document.getElementById("loginError").style.display = "none";
     unlock();
@@ -68,6 +75,23 @@ function tryLogin() {
     document.getElementById("loginError").style.display = "block";
   }
 }
+
+/* "Forgot password" — since this is a static site with no server,
+   there's no email/SMS reset possible. This resets ONLY the saved
+   password back to the shipped default (from config.js), keeping
+   every other saved edit (packages, prices, payment details, etc)
+   exactly as they are. */
+document.getElementById("forgotPasswordBtn").addEventListener("click", () => {
+  if (!confirm("Reset the admin password back to the default from config.js? Everything else you've saved (packages, prices, payment info) stays untouched.")) return;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  let parsed = {};
+  try { parsed = saved ? JSON.parse(saved) : {}; } catch (e) { parsed = {}; }
+  delete parsed.adminPassword;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+  CONFIG = loadConfig();
+  document.getElementById("loginError").style.display = "none";
+  alert("Password reset. The default password is now: " + DEFAULT_CONFIG.adminPassword);
+});
 
 document.getElementById("logoutBtn").addEventListener("click", () => {
   sessionStorage.removeItem(SESSION_KEY);
@@ -82,9 +106,11 @@ function populateForm() {
 
   document.getElementById("a_hs_enabled").checked = !!CONFIG.homestay.enabled;
   document.getElementById("a_hs_title").value = CONFIG.homestay.title;
-  document.getElementById("a_hs_price").value = CONFIG.homestay.price;
   document.getElementById("a_hs_note").value = CONFIG.homestay.note;
-  document.getElementById("a_hs_perperson").checked = !!CONFIG.homestay.perPerson;
+  document.getElementById("a_hs_adultbase").value = CONFIG.homestay.adultBasePrice ?? 0;
+  document.getElementById("a_hs_adultextra").value = CONFIG.homestay.additionalAdultPrice ?? 0;
+  document.getElementById("a_hs_childprice").value = CONFIG.homestay.childPrice ?? 0;
+  document.getElementById("a_hs_freeage").value = CONFIG.homestay.childFreeAge ?? 6;
 
   document.getElementById("a_cp_enabled").checked = !!CONFIG.camping.enabled;
   document.getElementById("a_cp_title").value = CONFIG.camping.title;
@@ -167,9 +193,11 @@ document.getElementById("saveBtn").addEventListener("click", () => {
 
   CONFIG.homestay.enabled = document.getElementById("a_hs_enabled").checked;
   CONFIG.homestay.title = document.getElementById("a_hs_title").value.trim();
-  CONFIG.homestay.price = Number(document.getElementById("a_hs_price").value) || 0;
   CONFIG.homestay.note = document.getElementById("a_hs_note").value.trim();
-  CONFIG.homestay.perPerson = document.getElementById("a_hs_perperson").checked;
+  CONFIG.homestay.adultBasePrice = Number(document.getElementById("a_hs_adultbase").value) || 0;
+  CONFIG.homestay.additionalAdultPrice = Number(document.getElementById("a_hs_adultextra").value) || 0;
+  CONFIG.homestay.childPrice = Number(document.getElementById("a_hs_childprice").value) || 0;
+  CONFIG.homestay.childFreeAge = Number(document.getElementById("a_hs_freeage").value) || 0;
 
   CONFIG.camping.enabled = document.getElementById("a_cp_enabled").checked;
   CONFIG.camping.title = document.getElementById("a_cp_title").value.trim();

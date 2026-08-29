@@ -215,6 +215,32 @@ textarea { resize: vertical; min-height: 40px; }
 }
 .stepper .stepper-value:focus { outline: none; }
 
+/* ---------- Per-child age inputs ---------- */
+.child-ages-wrap { margin-top: 14px; }
+.child-ages-wrap .q-note { margin: 0 0 10px; }
+.child-age-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.child-age-row label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  min-width: 82px;
+}
+.child-age-row input[type="number"] {
+  width: 80px;
+  flex: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+.child-age-row input[type="number"]:focus {
+  border: 1px solid var(--accent);
+  padding: 6px 8px;
+}
+
 /* ---------- Payment detail box ---------- */
 .pay-detail {
   border-top: 4px solid var(--accent);

@@ -50,11 +50,18 @@ github.com in the browser — no git command line needed.
 - It's protected by a password (default: `mawlyngbna2026`, set in `config.js`
   as `adminPassword` — **change this before you deploy**, and change it again
   any time from inside the dashboard).
+- **Forgot your password?** On the login screen, tap **"Forgot password?
+  Reset it"**. Since this is a static site there's no email/SMS to send a
+  reset to — this just resets the saved password back to the default in
+  `config.js`, without touching anything else you've saved (packages,
+  prices, payment details). There's also a "Show password" checkbox on
+  the login screen so you can double-check what you're typing.
 - From the dashboard you can:
   - Edit the form title/subtitle and the WhatsApp number
   - Add, edit, reorder, or remove **packages** and their prices
   - Turn the **Home stay** / **Camping** sections on or off, and edit their
-    price and note
+    prices and notes (Home Stay: 1st-adult price, price per extra adult,
+    price per child, and the age children stay free up to)
   - Edit the **UPI ID, bank account, IFSC, and QR image URL**
   - Change the admin password
 
@@ -88,6 +95,23 @@ The form is two pages, like a Google Form with a page break:
    Tapping **Submit** builds a WhatsApp message with every answer and opens
    WhatsApp (`wa.me`) with your number and that message pre-filled — the
    visitor just hits send.
+
+## Home Stay pricing (tiered by adults + child age)
+
+Home Stay now prices adults and children separately:
+- **Adults:** ₹1,500 for the 1st adult, +₹500 for every adult after that.
+- **Children age 7–18:** ₹1,000 each.
+- **Children age 6 and under:** free.
+
+Because of this, whenever a visitor sets "Number of child" above 0, an age
+box appears for each child — the site uses those ages to work out the Home
+Stay total. All four numbers (1st-adult price, extra-adult price, child
+price, and the free age cutoff) are editable in `config.js` under
+`homestay`, or live from the Admin Dashboard.
+
+This is separate from the **package** price children pay, which is still
+controlled by the single "Child price — % of adult price" setting — that
+one doesn't use ages, since packages didn't ask for age-based pricing.
 
 ## Editing prices, packages, and the calculator
 

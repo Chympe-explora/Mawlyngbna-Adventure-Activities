@@ -117,22 +117,33 @@ const DEFAULT_CONFIG = {
 
   /* ---------------------------------------------------------------
      HOME STAY  (an optional add-on the visitor can say yes/no to)
-       enabled    → true shows this question on the form,
-                    false hides it completely
-       title      → the heading shown to visitors
-       price      → the cost in rupees
-       note       → the small grey description line under the title
-       perPerson  → true  = price is charged ONCE PER PERSON
-                    (adults + children added together)
-                  → false = price is one flat charge for the
-                    whole group, no matter how many people
+       enabled            → true shows this question on the form,
+                             false hides it completely
+       title              → the heading shown to visitors
+       note               → the small grey description line under
+                             the title
+       adultBasePrice     → the price for the 1st adult
+       additionalAdultPrice → the extra price added for EACH adult
+                             after the first
+       childPrice         → the price for each child above the
+                             free age (see childFreeAge below)
+       childFreeAge       → children this age or younger stay free;
+                             children older than this pay childPrice
+
+     EXAMPLE with the numbers below: 1 adult = ₹1500. 3 adults =
+     ₹1500 + ₹500 + ₹500 = ₹2500. A 10-year-old child = ₹1000
+     (older than 6). A 5-year-old child = free (6 or younger).
+     Every child staying pays or is free based on their own age —
+     the visitor enters each child's age on the booking form.
   ----------------------------------------------------------------- */
   homestay: {
     enabled: true,
     title: "Home Stay",
-    price: 3000,
     note: "double bed with attach bathroom",
-    perPerson: false
+    adultBasePrice: 1500,
+    additionalAdultPrice: 500,
+    childPrice: 1000,
+    childFreeAge: 6
   },
 
 
@@ -173,7 +184,7 @@ const DEFAULT_CONFIG = {
      device/browser. Change this to your own password before you
      go live — anything you'll remember works.
   ----------------------------------------------------------------- */
-  adminPassword: "SENLY"
+  adminPassword: "mawlyngbna2026"
 
 };
 
@@ -191,8 +202,12 @@ const DEFAULT_CONFIG = {
      2. Package price  ×  childPriceMultiplier  ×  Number of children
           e.g. ₹1050 × 1 (full price) × 1 child = ₹1050
 
-     3. + Home stay price, IF the visitor said yes
-          (× number of people, only if perPerson is true above)
+     3. + Home stay, IF the visitor said yes:
+          adultBasePrice for the 1st adult, + additionalAdultPrice
+          for every adult after that, PLUS childPrice for every
+          child older than childFreeAge (children childFreeAge or
+          younger are free) — based on the age each child entered
+          on the form.
 
      4. + Camping price, IF the visitor said yes
           (× number of people, only if perPerson is true above)
