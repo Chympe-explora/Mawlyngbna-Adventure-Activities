@@ -140,7 +140,7 @@ const DEFAULT_CONFIG = {
   homestay: {
     enabled: true,
     title: "Home Stay",
-    note: "double bed with attach bathroom",
+    note: "child below 7 is free",
     adultBasePrice: 1500,
     additionalAdultPrice: 500,
     childPrice: 1000,
@@ -194,7 +194,7 @@ const DEFAULT_CONFIG = {
     dateError: "Please choose a date.",
 
     // ----- Participants / children -----
-    participantsLabel: "Number of participants",
+    participantsLabel: "Number of participant's",
     childrenLabel: "Number of child",
     // This is the note that appears once "Number of child" is above
     // 0 — this is the line circled in your screenshot.
