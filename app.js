@@ -556,28 +556,37 @@ function setupNavigation() {
 
     const { lines: priceLines, total } = computeTotal();
 
-    const lines = [
-      "*New Booking — Mawlyngbna Adventure*",
-      "",
-      `Name: ${name}`,
-      `WhatsApp Number: ${whatsapp}`,
-      `Date of visit: ${date}`,
-      `Number of participants: ${participants}`,
-      `Number of child: ${children}`
-    ];
-    if (parseInt(children, 10) > 0) {
+    // Build a "N Adult(s) + N Child (ages)" style group summary.
+    // Note: "participants" is the adult count (separate stepper from "children").
+    const numChildren = parseInt(children, 10) || 0;
+    const numAdults = parseInt(participants, 10) || 0;
+    let groupText = `${numAdults} Adult${numAdults === 1 ? "" : "s"}`;
+    if (numChildren > 0) {
       const ages = getChildAges().map(a => (a === null ? "?" : a));
-      lines.push(`Child ages: ${ages.join(", ")}`);
+      groupText += ` + ${numChildren} Child${numChildren === 1 ? "" : "ren"} (${ages.join(", ")} years)`;
     }
-    lines.push(`Package: ${pkg.label} (\u20B9${pkg.price} per person)`);
-    if (homestay !== null) lines.push(`Home stay: ${homestay}`);
-    if (camping !== null) lines.push(`Camping: ${camping}`);
-    if (special) lines.push(`Special request: ${special}`);
-    lines.push(`Payment mode: ${payLabel}`);
+
+    const lines = [
+      "\u{1F3D4}\uFE0F *Booking Request \u2014 Mawlyngbna Adventure*",
+      "",
+      `\u{1F464} Name: ${name}`,
+      `\u{1F4F1} WhatsApp Number: ${whatsapp}`,
+      `\u{1F4C5} Visit: ${date}`,
+      `\u{1F465} Group: ${groupText}`,
+      "",
+      `\u{1F392} Adventure: ${pkg.label}`
+    ];
+    if (homestay !== null) lines.push(`\u{1F3E1} Homestay: ${homestay === "yes" ? "Yes" : "No"}`);
+    if (camping !== null) lines.push(`\u26FA Camping: ${camping === "yes" ? "Yes" : "No"}`);
     lines.push("");
-    lines.push("*Price breakdown*");
-    priceLines.forEach(l => lines.push(`${l.label}: \u20B9${Math.round(l.amount).toLocaleString("en-IN")}`));
-    lines.push(`*Total: \u20B9${Math.round(total).toLocaleString("en-IN")}*`);
+    lines.push(`\u{1F4B0} Total: \u20B9${Math.round(total).toLocaleString("en-IN")}`);
+    lines.push(`\u{1F4B3} Payment: ${payLabel}`);
+    if (special) {
+      lines.push("");
+      lines.push(`\u{1F4DD} Special Request: ${special}`);
+    }
+    lines.push("");
+    lines.push("Please confirm the availability and booking. Thank you!");
 
     const message = lines.join("\n");
     const waUrl = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
