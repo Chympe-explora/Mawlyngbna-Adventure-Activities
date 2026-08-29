@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Mawlyngbna Adventure</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Password gate -->
+<div class="admin-gate" id="gate">
+  <div class="card">
+    <h1>Admin dashboard</h1>
+    <p>Enter the admin password to edit prices, packages and details.</p>
+    <input type="password" id="gatePassword" placeholder="Password" autocomplete="current-password">
+    <div class="error-msg" id="gateError" style="display:none;">Incorrect password.</div>
+    <button class="btn-primary" id="gateSubmit">Unlock</button>
+    <p style="margin-top:14px;"><a href="index.html" style="color:var(--river-bright); font-size:13px;">← Back to booking page</a></p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div class="wrap admin-shell" id="dashboard" style="display:none;">
+
+  <div class="admin-header">
+    <div>
+      <h1>Admin dashboard</h1>
+      <div class="sub">Edits preview instantly below. Export to make them live for everyone.</div>
+    </div>
+    <div class="admin-actions">
+      <a href="index.html" class="btn-secondary">View site</a>
+      <button class="btn-secondary" id="btnLock">Lock</button>
+    </div>
+  </div>
+
+  <div class="banner">
+    This site is static (hosted on GitHub Pages), so there's no live database. Saving here previews your
+    changes instantly, but only in <em>this</em> browser. To publish changes for every visitor, click
+    <strong>Export config.js</strong> below and commit the downloaded file over <code>config.js</code> in your
+    GitHub repository.
+  </div>
+
+  <div class="admin-actions" style="margin-bottom: 6px;">
+    <button class="btn-primary" id="btnSave" style="width:auto; margin-top:0; padding:11px 18px;">Save preview</button>
+    <button class="btn-secondary" id="btnExport">⭳ Export config.js</button>
+    <label class="btn-secondary" style="cursor:pointer;">
+      Import config
+      <input type="file" id="importFile" accept=".js,.json" style="display:none;">
+    </label>
+    <button class="btn-secondary" id="btnReset">Reset to defaults</button>
+  </div>
+
+  <!-- Page text -->
+  <div class="admin-section">
+    <h2>Page text</h2>
+    <div class="card">
+      <div class="field" style="margin-top:0;">
+        <label class="field-label">Eyebrow tag</label>
+        <input type="text" id="mHeroTag">
+      </div>
+      <div class="field">
+        <label class="field-label">Title</label>
+        <input type="text" id="mTitle">
+      </div>
+      <div class="field">
+        <label class="field-label">Subtitle</label>
+        <textarea id="mSubtitle"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Footer note</label>
+        <input type="text" id="mFooter">
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact -->
+  <div class="admin-section">
+    <h2>Contact</h2>
+    <div class="card">
+      <div class="grid-2">
+        <div class="field" style="margin-top:0;">
+          <label class="field-label">WhatsApp number (digits only, country code first)</label>
+          <input type="text" id="cWhatsapp" placeholder="916909659928">
+        </div>
+        <div class="field" style="margin-top:0;">
+          <label class="field-label">Display phone</label>
+          <input type="text" id="cDisplay" placeholder="+91 69096 59928">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment -->
+  <div class="admin-section">
+    <h2>Payment details</h2>
+    <div class="card">
+      <div class="field" style="margin-top:0;">
+        <label class="field-label">UPI ID</label>
+        <input type="text" id="pUpi">
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label class="field-label">Account number</label>
+          <input type="text" id="pAccount">
+        </div>
+        <div class="field">
+          <label class="field-label">IFSC</label>
+          <input type="text" id="pIfsc">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Bank label</label>
+        <input type="text" id="pBankLabel">
+      </div>
+      <div class="field">
+        <label class="field-label">QR code image</label>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:6px;">
+          <img id="pQrPreview" src="assets/qr.png" alt="QR preview" style="width:70px; height:70px; object-fit:cover; border-radius:10px; border:1px solid rgba(242,237,225,.14);">
+          <label class="btn-secondary" style="cursor:pointer;">
+            Upload new QR
+            <input type="file" id="pQrFile" accept="image/*" style="display:none;">
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packages -->
+  <div class="admin-section">
+    <h2>Packages</h2>
+    <div id="packageEditor"></div>
+    <button type="button" class="btn-secondary" id="btnAddPackage">+ Add package</button>
+  </div>
+
+  <!-- Add-ons -->
+  <div class="admin-section">
+    <h2>Add-ons</h2>
+    <div id="addonEditor"></div>
+    <button type="button" class="btn-secondary" id="btnAddAddon">+ Add add-on</button>
+  </div>
+
+  <!-- Pricing rules -->
+  <div class="admin-section">
+    <h2>Pricing rules</h2>
+    <div class="card">
+      <div class="field" style="margin-top:0;">
+        <label class="field-label">Child price (% of package price)</label>
+        <input type="number" id="rChildPct" min="0" max="100" step="5">
+      </div>
+    </div>
+  </div>
+
+  <!-- Security -->
+  <div class="admin-section">
+    <h2>Admin password</h2>
+    <div class="card">
+      <div class="field" style="margin-top:0;">
+        <label class="field-label">New password</label>
+        <input type="password" id="sPassword" placeholder="Leave blank to keep current">
+      </div>
+      <div class="card-hint">This is a client-side password meant to keep casual visitors out — anyone who
+        views this site's source code can see it. Don't use it to protect sensitive information.</div>
+    </div>
+  </div>
+
+  <div style="height:40px;"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
