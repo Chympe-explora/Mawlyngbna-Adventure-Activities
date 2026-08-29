@@ -174,7 +174,7 @@ const DEFAULT_CONFIG = {
   labels: {
 
     // ----- Top of page 1 -----
-    topNote: "This form collects your name, WhatsApp number and booking details so we can confirm your adventure.",
+    topNote: "This form is to book your adventure.",
     requiredNote: "* Indicates required question",
     page1Indicator: "Page 1 of 2",
     page2Indicator: "Page 2 of 2",
@@ -198,7 +198,7 @@ const DEFAULT_CONFIG = {
     childrenLabel: "Number of child",
     // This is the note that appears once "Number of child" is above
     // 0 — this is the line circled in your screenshot.
-    childAgeNote: "Age of each child (needed to work out Home Stay pricing)",
+    childAgeNote: "Age of each child",
     // {n} is replaced automatically with 1, 2, 3... for each child.
     childAgeLabel: "Child {n} age",
     childAgePlaceholder: "age",
@@ -259,7 +259,7 @@ const DEFAULT_CONFIG = {
     // ----- Live total box -----
     estimatedTotalLabel: "Estimated total",
     totalLabel: "Total",
-    totalFooterNote: "Final amount will be confirmed with you on WhatsApp.",
+    totalFooterNote: "The booking will be confirmed by admin after submission.",
     emptyBreakdownNote: "Select a package to see pricing",
 
     // ----- Page 2 buttons -----
