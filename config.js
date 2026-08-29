@@ -173,7 +173,7 @@ const DEFAULT_CONFIG = {
      device/browser. Change this to your own password before you
      go live — anything you'll remember works.
   ----------------------------------------------------------------- */
-  adminPassword: "mawlyngbna2026"
+  adminPassword: "SENLY"
 
 };
 
