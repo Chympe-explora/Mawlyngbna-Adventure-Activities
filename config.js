@@ -140,7 +140,7 @@ const DEFAULT_CONFIG = {
   homestay: {
     enabled: true,
     title: "Home Stay",
-    note: "child below 7 is free",
+    note: "child below 6 is free",
     adultBasePrice: 1500,
     additionalAdultPrice: 500,
     childPrice: 1000,
