@@ -140,7 +140,7 @@ const DEFAULT_CONFIG = {
   homestay: {
     enabled: true,
     title: "Home Stay",
-    Note: "child below 7 is free",
+    note: "child below 7 is free",
     adultBasePrice: 1500,
     additionalAdultPrice: 500,
     childPrice: 1000,
@@ -155,7 +155,7 @@ const DEFAULT_CONFIG = {
     enabled: true,
     title: "Camping",
     price: 1500,
-    Note: "camping and bon fire, per person",
+    note: "camping and bon fire, per person",
     perPerson: true
   },
 
