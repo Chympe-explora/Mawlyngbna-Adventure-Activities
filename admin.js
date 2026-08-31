@@ -23,7 +23,11 @@ function loadConfig() {
       pricing: { ...DEFAULT_CONFIG.pricing, ...(parsed.pricing || {}) },
       limits: { ...DEFAULT_CONFIG.limits, ...(parsed.limits || {}) },
       labels: { ...DEFAULT_CONFIG.labels, ...(parsed.labels || {}) },
-      packages: parsed.packages && parsed.packages.length ? parsed.packages : DEFAULT_CONFIG.packages
+      packages: (parsed.packages && parsed.packages.length ? parsed.packages : DEFAULT_CONFIG.packages).map((pkg, i) => ({
+        ...(DEFAULT_CONFIG.packages[i] || {}),
+        ...pkg,
+        items: Array.isArray(pkg.items) ? pkg.items : (DEFAULT_CONFIG.packages[i]?.items || [])
+      }))
     };
   } catch (e) {
     return structuredClone(DEFAULT_CONFIG);
@@ -108,10 +112,9 @@ function populateForm() {
   document.getElementById("a_hs_enabled").checked = !!CONFIG.homestay.enabled;
   document.getElementById("a_hs_title").value = CONFIG.homestay.title;
   document.getElementById("a_hs_note").value = CONFIG.homestay.note;
-  document.getElementById("a_hs_adultbase").value = CONFIG.homestay.adultBasePrice ?? 0;
+  document.getElementById("a_hs_firstadult").value = CONFIG.homestay.firstAdultPrice ?? 0;
   document.getElementById("a_hs_adultextra").value = CONFIG.homestay.additionalAdultPrice ?? 0;
-  document.getElementById("a_hs_childprice").value = CONFIG.homestay.childPrice ?? 0;
-  document.getElementById("a_hs_freeage").value = CONFIG.homestay.childFreeAge ?? 6;
+  document.getElementById("a_hs_childrenfree").checked = !!CONFIG.homestay.childrenFreeWithAdult;
 
   document.getElementById("a_cp_enabled").checked = !!CONFIG.camping.enabled;
   document.getElementById("a_cp_title").value = CONFIG.camping.title;
@@ -119,8 +122,7 @@ function populateForm() {
   document.getElementById("a_cp_note").value = CONFIG.camping.note;
   document.getElementById("a_cp_perperson").checked = !!CONFIG.camping.perPerson;
 
-  document.getElementById("a_childRate").value = Math.round((CONFIG.pricing?.childPriceMultiplier ?? 0.5) * 100);
-
+  
   document.getElementById("a_minP").value = CONFIG.limits?.minParticipants ?? 1;
   document.getElementById("a_maxP").value = CONFIG.limits?.maxParticipants ?? 50;
   document.getElementById("a_minC").value = CONFIG.limits?.minChildren ?? 0;
@@ -159,39 +161,36 @@ function renderPackageEditor() {
   packageEditor.innerHTML = "";
   CONFIG.packages.forEach((pkg, idx) => {
     const row = document.createElement("div");
-    row.className = "pkg-row";
+    row.className = "pkg-row pkg-row-expanded";
+    const items = Array.isArray(pkg.items) ? pkg.items.join("\n") : "";
     row.innerHTML = `
       <input type="text" data-field="label" value="${escapeAttr(pkg.label)}" placeholder="Package name">
-      <input type="number" data-field="price" value="${pkg.price}" placeholder="Price">
+      <input type="number" data-field="price" value="${pkg.price}" placeholder="Adult price">
+      <input type="number" data-field="childPrice" value="${pkg.childPrice ?? 0}" placeholder="Child price">
+      <textarea data-field="items" rows="4" placeholder="One emoji item per line">${escapeTextarea(items)}</textarea>
       <button type="button" class="icon-btn" data-action="move-up" title="Move up">↑</button>
       <button type="button" class="icon-btn danger" data-action="remove" title="Remove">✕ Remove</button>
     `;
-    row.querySelector('[data-field="label"]').addEventListener("input", e => {
-      CONFIG.packages[idx].label = e.target.value;
-    });
-    row.querySelector('[data-field="price"]').addEventListener("input", e => {
-      CONFIG.packages[idx].price = Number(e.target.value) || 0;
-    });
-    row.querySelector('[data-action="remove"]').addEventListener("click", () => {
-      CONFIG.packages.splice(idx, 1);
-      renderPackageEditor();
-    });
-    row.querySelector('[data-action="move-up"]').addEventListener("click", () => {
-      if (idx === 0) return;
-      const tmp = CONFIG.packages[idx - 1];
-      CONFIG.packages[idx - 1] = CONFIG.packages[idx];
-      CONFIG.packages[idx] = tmp;
-      renderPackageEditor();
-    });
+    row.querySelector('[data-field="label"]').addEventListener("input", e => CONFIG.packages[idx].label=e.target.value);
+    row.querySelector('[data-field="price"]').addEventListener("input", e => CONFIG.packages[idx].price=Number(e.target.value)||0);
+    row.querySelector('[data-field="childPrice"]').addEventListener("input", e => CONFIG.packages[idx].childPrice=Number(e.target.value)||0);
+    row.querySelector('[data-field="items"]').addEventListener("input", e => CONFIG.packages[idx].items=e.target.value.split(/\n/).map(v=>v.trim()).filter(Boolean));
+    row.querySelector('[data-action="remove"]').addEventListener("click",()=>{CONFIG.packages.splice(idx,1);renderPackageEditor();});
+    row.querySelector('[data-action="move-up"]').addEventListener("click",()=>{if(idx===0)return; const tmp=CONFIG.packages[idx-1]; CONFIG.packages[idx-1]=CONFIG.packages[idx]; CONFIG.packages[idx]=tmp; renderPackageEditor();});
     packageEditor.appendChild(row);
   });
 }
+
+function escapeAttr(str) { return String(str).replace(/"/g,"&quot;"); }
+function escapeTextarea(str) { return String(str ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\u0022/g,"&quot;"); }
 
 document.getElementById("addPackageBtn").addEventListener("click", () => {
   CONFIG.packages.push({
     id: "pkg" + Date.now(),
     label: "New package",
-    price: 0
+    price: 0,
+    childPrice: 600,
+    items: ["✨ New activity"]
   });
   renderPackageEditor();
 });
@@ -209,19 +208,15 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   CONFIG.homestay.enabled = document.getElementById("a_hs_enabled").checked;
   CONFIG.homestay.title = document.getElementById("a_hs_title").value.trim();
   CONFIG.homestay.note = document.getElementById("a_hs_note").value.trim();
-  CONFIG.homestay.adultBasePrice = Number(document.getElementById("a_hs_adultbase").value) || 0;
+  CONFIG.homestay.firstAdultPrice = Number(document.getElementById("a_hs_firstadult").value) || 0;
   CONFIG.homestay.additionalAdultPrice = Number(document.getElementById("a_hs_adultextra").value) || 0;
-  CONFIG.homestay.childPrice = Number(document.getElementById("a_hs_childprice").value) || 0;
-  CONFIG.homestay.childFreeAge = Number(document.getElementById("a_hs_freeage").value) || 0;
+  CONFIG.homestay.childrenFreeWithAdult = document.getElementById("a_hs_childrenfree").checked;
 
   CONFIG.camping.enabled = document.getElementById("a_cp_enabled").checked;
   CONFIG.camping.title = document.getElementById("a_cp_title").value.trim();
   CONFIG.camping.price = Number(document.getElementById("a_cp_price").value) || 0;
   CONFIG.camping.note = document.getElementById("a_cp_note").value.trim();
   CONFIG.camping.perPerson = document.getElementById("a_cp_perperson").checked;
-
-  CONFIG.pricing = CONFIG.pricing || {};
-  CONFIG.pricing.childPriceMultiplier = Math.max(0, Math.min(100, Number(document.getElementById("a_childRate").value) || 0)) / 100;
 
   CONFIG.limits = CONFIG.limits || {};
   CONFIG.limits.minParticipants = Number(document.getElementById("a_minP").value) || 0;

@@ -102,31 +102,50 @@ The form is two pages, like a Google Form with a page break:
    WhatsApp (`wa.me`) with your number and that message pre-filled — the
    visitor just hits send.
 
-## Home Stay pricing (tiered by adults + child age)
+## Current pricing rules
 
-Home Stay now prices adults and children separately:
-- **Adults:** ₹1,500 for the 1st adult, +₹500 for every adult after that.
-- **Children age 7–18:** ₹1,000 each.
-- **Children age 6 and under:** free.
+### Activity packages
+- Adults / regular visitors pay the package's listed **price per person**.
+- Every child **below 17** pays **₹600** for the activity packages, unless that package has a different child price configured.
+- **Water falls** is ₹100 for everyone, so both adults and children pay ₹100.
+- Each package can have its own emoji item list, adult price, and child price in `config.js`.
 
-Because of this, whenever a visitor sets "Number of child" above 0, an age
-box appears for each child — the site uses those ages to work out the Home
-Stay total. All four numbers (1st-adult price, extra-adult price, child
-price, and the free age cutoff) are editable in `config.js` under
-`homestay`, or live from the Admin Dashboard.
+### Home Stay + Maggi & Bread
+Home Stay is charged only according to the number of adults / regular visitors in the group:
 
-This is separate from the **package** price children pay, which is still
-controlled by the single "Child price — % of adult price" setting — that
-one doesn't use ages, since packages didn't ask for age-based pricing.
+- 1 adult = **₹1,500**
+- 2 adults = **₹2,000**
+- 3 adults = **₹2,500**
+- 4 adults = **₹3,000**
+- and so on: **₹1,500 + ₹500 for each additional adult**
 
-## Editing prices, packages, and the calculator
+Children below 17 are **free** for Home Stay when they are accompanied by an adult. They are not added to the Home Stay headcount.
 
-Everything is in **`config.js`**, and every value there has a plain-English
-comment above it explaining what it does and showing an example — you don't
-need to know how to code. Search the file for the label in CAPS (e.g.
-`PACKAGES`, `CHILD PRICING RULE`, `HOME STAY`) to jump straight to what you
-want to change. A walkthrough of exactly how the total price gets
-calculated is also written out at the bottom of that file.
+Example: **1 adult + 2 children = ₹1,500 Home Stay total.**
+
+### Camping
+Camping is **₹1,500 per person**, including children. If a group has 2 adults + 1 child, camping is ₹4,500.
+
+### Combined bookings
+Visitors can select an activity package, Home Stay and Camping together. The calculator adds each selected service automatically.
+
+## Editing prices, packages, emojis, text and the calculator
+
+Everything that controls the visitor-facing form is organized in **`config.js`**. You can edit:
+
+- Activity names and prices
+- Child prices for each activity package
+- Emoji item lists shown under each package
+- Water falls pricing
+- Home Stay first-adult and additional-adult prices
+- Whether children stay free with an adult
+- Camping price and emoji item list
+- Form labels, notes, buttons and messages
+- Payment information
+
+The calculator code reads these values automatically, so you do **not** need to manually change the calculation whenever a price changes.
+
+The Admin Dashboard also lets you edit package names, adult prices, child prices and emoji item lists, plus the Home Stay and other settings. Dashboard changes are stored in that browser's local storage; for changes that must appear for **all visitors**, edit `config.js` and re-deploy the website.
 
 ## Before you go live, double check
 

@@ -161,3 +161,23 @@
   margin-top: 8px;
 }
 .save-status { font-size: 13px; color: #188038; }
+
+/* Expanded package editor: name, adult price, child price and emoji items */
+.pkg-row-expanded {
+  grid-template-columns: minmax(180px, 1.5fr) minmax(100px, .7fr) minmax(100px, .7fr) minmax(220px, 2fr) auto auto;
+  align-items: start;
+}
+.pkg-row-expanded textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+@media (max-width: 800px) {
+  .pkg-row-expanded {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pkg-row-expanded textarea {
+    grid-column: 1 / -1;
+  }
+}

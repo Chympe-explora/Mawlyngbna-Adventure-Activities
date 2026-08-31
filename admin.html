@@ -61,8 +61,7 @@
         <button type="button" class="add-btn" id="addPackageBtn">+ Add package</button>
       </div>
       <div id="packageEditor"></div>
-      <label>Child price — % of the adult package price (e.g. 50 = half price, 0 = free)</label>
-      <input type="number" id="a_childRate" min="0" max="100" step="5">
+      <p class="section-hint">For each package, edit the adult price, child price and emoji item list. Children means visitors below 17.</p>
     </section>
 
     <!-- Booking limits -->
@@ -99,13 +98,10 @@
       <label>Note</label>
       <input type="text" id="a_hs_note">
       <label>Price for the 1st adult (₹)</label>
-      <input type="number" id="a_hs_adultbase">
+      <input type="number" id="a_hs_firstadult">
       <label>Price for each additional adult (₹)</label>
       <input type="number" id="a_hs_adultextra">
-      <label>Price per child, above the free age (₹)</label>
-      <input type="number" id="a_hs_childprice">
-      <label>Children this age or younger stay free</label>
-      <input type="number" id="a_hs_freeage" min="0" max="18">
+      <label class="toggle-row"><input type="checkbox" id="a_hs_childrenfree"> Children below 17 stay free when accompanied by an adult</label>
     </section>
 
     <!-- Camping -->
@@ -165,12 +161,8 @@
       <input type="text" id="t_participantsLabel">
       <label>"Number of child" label</label>
       <input type="text" id="t_childrenLabel">
-      <label>Child-age note (the line about Home Stay pricing)</label>
-      <input type="text" id="t_childAgeNote">
-      <label>Per-child age label — use {n} where the child number should go</label>
-      <input type="text" id="t_childAgeLabel">
-      <label>Age box placeholder</label>
-      <input type="text" id="t_childAgePlaceholder">
+      <label>Child pricing note</label>
+      <input type="text" id="t_childNote">
 
       <h4>Package question</h4>
       <label>Question label</label>
@@ -283,10 +275,12 @@
       <input type="text" id="t_childrenWord">
       <label>Word used for "free"</label>
       <input type="text" id="t_freeText">
-      <label>Home Stay chargeable-age range text — use {from} for the first paying age</label>
-      <input type="text" id="t_homeStayAgedRangeText">
-      <label>Home Stay free-age text — use {age} for the free-up-to age</label>
-      <input type="text" id="t_homeStayFreeAgeText">
+      <label>Home Stay child-free message</label>
+      <input type="text" id="t_homeStayChildFreeText">
+      <label>Package details heading</label>
+      <input type="text" id="t_packageDetailsText">
+      <label>Child price text — use {price} for the package child price</label>
+      <input type="text" id="t_childPriceText">
     </section>
 
     <!-- Payment -->
