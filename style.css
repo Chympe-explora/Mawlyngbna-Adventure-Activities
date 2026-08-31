@@ -391,39 +391,3 @@ textarea { resize: vertical; min-height: 40px; }
   .card-body { padding: 20px 18px; }
   .header-card h1 { font-size: 22px; }
 }
-
-/* Package details / emoji bullet list */
-.package-choice {
-  align-items: flex-start;
-}
-.package-choice label {
-  display: block;
-  flex: 1;
-  line-height: 1.45;
-}
-.package-title {
-  display: block;
-  font-weight: 500;
-}
-.package-child-price {
-  display: block;
-  margin-top: 3px;
-  font-size: 13px;
-  opacity: .78;
-}
-.package-items {
-  margin-top: 8px;
-  padding-left: 2px;
-}
-.package-includes {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 3px;
-}
-.package-item {
-  font-size: 14px;
-  margin: 3px 0;
-}
-.child-note {
-  margin-top: 12px;
-}

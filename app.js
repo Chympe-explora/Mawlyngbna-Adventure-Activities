@@ -21,16 +21,11 @@ function loadConfig() {
       ...structuredClone(DEFAULT_CONFIG),
       ...parsed,
       payment: { ...DEFAULT_CONFIG.payment, ...(parsed.payment || {}) },
-      homestay: { ...DEFAULT_CONFIG.homestay, ...(parsed.homestay || {}), ...(parsed.homestay?.adultBasePrice !== undefined ? { firstAdultPrice: parsed.homestay.adultBasePrice } : {}), ...(parsed.homestay?.childFreeAge !== undefined ? { childrenFreeWithAdult: true } : {}) },
+      homestay: { ...DEFAULT_CONFIG.homestay, ...(parsed.homestay || {}) },
       camping: { ...DEFAULT_CONFIG.camping, ...(parsed.camping || {}) },
       pricing: { ...DEFAULT_CONFIG.pricing, ...(parsed.pricing || {}) },
       limits: { ...DEFAULT_CONFIG.limits, ...(parsed.limits || {}) },
-      labels: { ...DEFAULT_CONFIG.labels, ...(parsed.labels || {}) },
-      packages: (parsed.packages && parsed.packages.length ? parsed.packages : DEFAULT_CONFIG.packages).map((pkg, i) => ({
-        ...(DEFAULT_CONFIG.packages[i] || {}),
-        ...pkg,
-        items: Array.isArray(pkg.items) ? pkg.items : (DEFAULT_CONFIG.packages[i]?.items || [])
-      }))
+      packages: parsed.packages && parsed.packages.length ? parsed.packages : DEFAULT_CONFIG.packages
     };
   } catch (e) {
     console.warn("Config parse failed, using defaults", e);
@@ -71,6 +66,7 @@ function setupSteppers() {
       input.value = String(val);
       decBtn.disabled = val <= min;
       incBtn.disabled = val >= max;
+      if (key === "children") { try { renderChildAgeInputs(val); } catch (e) { console.error("Child age render failed", e); } }
       safeRecalcTotal();
     }
     decBtn.addEventListener("click", () => update((parseInt(input.value, 10) || 0) - 1));
@@ -80,7 +76,53 @@ function setupSteppers() {
   });
 }
 setupSteppers();
-/* Children are defined as visitors below 17; no individual age fields are required. */
+renderChildAgeInputs(parseInt(document.getElementById("f_children")?.value, 10) || 0);
+
+/* ----------------------------------------------------------------
+   Per-child age inputs. Shown under "Number of child" whenever
+   that count is above 0 — one small age box per child. Ages are
+   used to work out Home Stay pricing (children childFreeAge or
+   younger are free, older children pay childPrice).
+------------------------------------------------------------------- */
+function renderChildAgeInputs(count) {
+  const wrap = document.getElementById("childAgesWrap");
+  const list = document.getElementById("childAgesList");
+  if (!wrap || !list) return;
+
+  // Preserve whatever ages are already typed in before rebuilding.
+  const existing = Array.from(list.querySelectorAll("input")).map(inp => inp.value);
+
+  if (!count || count <= 0) {
+    wrap.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+
+  wrap.hidden = false;
+  list.innerHTML = "";
+  const ageLabelTemplate = L.childAgeLabel ?? "Child {n} age";
+  const agePlaceholder = L.childAgePlaceholder ?? "age";
+  for (let i = 0; i < count; i++) {
+    const row = document.createElement("div");
+    row.className = "child-age-row";
+    const ageLabel = ageLabelTemplate.replace("{n}", String(i + 1));
+    row.innerHTML = `
+      <label for="child_age_${i}">${ageLabel}</label>
+      <input type="number" id="child_age_${i}" min="0" max="18" inputmode="numeric" value="${existing[i] ?? ""}" placeholder="${agePlaceholder}">
+    `;
+    row.querySelector("input").addEventListener("input", safeRecalcTotal);
+    list.appendChild(row);
+  }
+}
+
+/** Reads the ages currently entered for each child (null if left blank/invalid). */
+function getChildAges() {
+  return Array.from(document.querySelectorAll("#childAgesList input")).map(inp => {
+    const v = parseInt(inp.value, 10);
+    return Number.isNaN(v) ? null : v;
+  });
+}
+
 /* ---------------- Everything else, defensively ---------------- */
 try { renderLabels(); } catch (e) { console.error("Label render failed", e); }
 try { renderHeader(); } catch (e) { console.error("Header render failed", e); }
@@ -120,7 +162,7 @@ function renderLabels() {
 
   setText("participantsLabel", L.participantsLabel);
   setText("childrenLabel", L.childrenLabel);
-  setText("childNote", L.childNote);
+  setText("childAgeNote", L.childAgeNote);
 
   setText("packageQuestionLabel", L.packageQuestionLabel);
   setText("err_package", L.packageError);
@@ -174,23 +216,21 @@ function renderHeader() {
 }
 
 /* ---------------- Render packages ---------------- */
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[ch]));
-}
-
 function renderPackages() {
   const packageListEl = document.getElementById("packageList");
-  if (!packageListEl) return;
   packageListEl.innerHTML = "";
-  CONFIG.packages.forEach(pkg => {
+  CONFIG.packages.forEach((pkg) => {
     const row = document.createElement("div");
-    row.className = "choice-row package-choice";
-    const items = Array.isArray(pkg.items) ? pkg.items : [];
-    const itemsHtml = items.length ? `<div class="package-items"><div class="package-includes">${escapeHtml(L.packageDetailsText ?? "Includes:")}</div>${items.map(item => `<div class="package-item">${escapeHtml(item)}</div>`).join("")}</div>` : "";
-    const childText = (L.childPriceText ?? "Child: ₹{price}").replace("{price}", Number(pkg.childPrice ?? 0).toLocaleString("en-IN"));
-    row.innerHTML = `<input type="radio" name="package" value="${escapeAttr(pkg.id)}" id="pkg_${escapeAttr(pkg.id)}"><label for="pkg_${escapeAttr(pkg.id)}"><span class="package-title">${escapeHtml(pkg.label)}</span><span class="choice-price">= ₹${Number(pkg.price || 0).toLocaleString("en-IN")} ${escapeHtml(L.perPersonText ?? "per person")}</span><span class="package-child-price">${escapeHtml(childText)}</span>${itemsHtml}</label>`;
+    row.className = "choice-row";
+    row.innerHTML = `
+      <input type="radio" name="package" value="${pkg.id}" id="pkg_${pkg.id}">
+      <label for="pkg_${pkg.id}">${pkg.label} <span class="choice-price">= \u20B9${pkg.price} ${L.perPersonText ?? "per person"}</span></label>
+    `;
     packageListEl.appendChild(row);
-    row.querySelector("input").addEventListener("change", () => { document.getElementById("err_package")?.classList.remove("show"); safeRecalcTotal(); });
+    row.querySelector("input").addEventListener("change", () => {
+      document.getElementById("err_package").classList.remove("show");
+      safeRecalcTotal();
+    });
   });
 }
 
@@ -198,21 +238,28 @@ function renderPackages() {
 function renderAddonSections() {
   const homestayCard = document.getElementById("homestayCard");
   const campingCard = document.getElementById("campingCard");
-  if (!CONFIG.homestay.enabled) homestayCard.style.display = "none";
-  else {
-    const hs = CONFIG.homestay; const prefix = L.notePrefix ?? "Note: ";
+
+  if (!CONFIG.homestay.enabled) {
+    homestayCard.style.display = "none";
+  } else {
+    const hs = CONFIG.homestay;
+    const prefix = L.notePrefix ?? "note : ";
     document.getElementById("homestayTitle").textContent = hs.title;
     document.getElementById("homestayNote").textContent = `${prefix}${hs.note}`;
   }
-  if (!CONFIG.camping.enabled) campingCard.style.display = "none";
-  else {
-    const cp = CONFIG.camping; const prefix = L.notePrefix ?? "Note: ";
-    document.getElementById("campingTitle").textContent = cp.title;
-    document.getElementById("campingNote").textContent = `${prefix}${cp.note} ₹${Number(cp.price || 0).toLocaleString("en-IN")} ${L.perPersonText ?? "per person"}`;
-    const list = document.getElementById("campingItems");
-    if (list) list.innerHTML = (cp.items || []).map(item => `<div class="package-item">${escapeHtml(item)}</div>`).join("");
+
+  if (!CONFIG.camping.enabled) {
+    campingCard.style.display = "none";
+  } else {
+    const prefix = L.notePrefix ?? "note : ";
+    document.getElementById("campingTitle").textContent = CONFIG.camping.title;
+    document.getElementById("campingNote").textContent =
+      `${prefix}${CONFIG.camping.note} \u20B9 ${CONFIG.camping.price}`;
   }
-  document.querySelectorAll('input[name="homestay"], input[name="camping"]').forEach(el => el.addEventListener("change", safeRecalcTotal));
+
+  document.querySelectorAll('input[name="homestay"], input[name="camping"]').forEach(el => {
+    el.addEventListener("change", safeRecalcTotal);
+  });
 }
 
 /* ---------------- Payment detail text (page 2) ---------------- */
@@ -231,7 +278,7 @@ function formatRupees(n) {
 
 /** Recomputes the total from whatever is currently selected on the form.
     Child price uses the same per-person rate as the chosen package
-    using the package's configured childPrice. */
+    (childPriceMultiplier defaults to 1 = full package price per child). */
 function computeTotal() {
   const participants = parseInt(document.getElementById("f_participants").value, 10) || 0;
   const children = parseInt(document.getElementById("f_children").value, 10) || 0;
@@ -239,24 +286,71 @@ function computeTotal() {
   const pkg = CONFIG.packages.find(p => p.id === pkgId);
   const homestayOn = CONFIG.homestay.enabled && document.querySelector('input[name="homestay"]:checked')?.value === "yes";
   const campingOn = CONFIG.camping.enabled && document.querySelector('input[name="camping"]:checked')?.value === "yes";
-  const lines = []; let total = 0;
+  const childRate = CONFIG.pricing?.childPriceMultiplier ?? 1;
+
+  const lines = [];
+  let total = 0;
+
   const adultWord = participants === 1 ? (L.adultWord ?? "adult") : (L.adultsWord ?? "adults");
   const childWordFor = n => n === 1 ? (L.childWord ?? "child") : (L.childrenWord ?? "children");
+  const freeText = L.freeText ?? "free";
+
   if (pkg) {
-    const adultSub = Number(pkg.price || 0) * participants;
-    lines.push({label:`${pkg.label} × ${participants} ${adultWord}`, amount:adultSub}); total += adultSub;
-    if (children > 0) { const sub=Number(pkg.childPrice ?? 0)*children; lines.push({label:`${pkg.label} × ${children} ${childWordFor(children)}`,amount:sub}); total+=sub; }
+    if (participants > 0) {
+      const sub = pkg.price * participants;
+      lines.push({ label: `${pkg.label} \u00d7 ${participants} ${adultWord}`, amount: sub });
+      total += sub;
+    }
+    if (children > 0 && childRate > 0) {
+      const sub = pkg.price * childRate * children;
+      const rateNote = childRate === 1 ? "" : ` (${Math.round(childRate * 100)}% rate)`;
+      lines.push({ label: `${pkg.label} \u00d7 ${children} ${childWordFor(children)}${rateNote}`, amount: sub });
+      total += sub;
+    } else if (children > 0) {
+      lines.push({ label: `${pkg.label} \u00d7 ${children} ${childWordFor(children)} (${freeText})`, amount: 0 });
+    }
   }
+
   if (homestayOn) {
-    const hs=CONFIG.homestay;
-    if (participants>0) { const sub=Number(hs.firstAdultPrice||0)+Math.max(0,participants-1)*Number(hs.additionalAdultPrice||0); lines.push({label:`${hs.title} — ${participants} ${adultWord}`,amount:sub}); total+=sub; }
-    if (children>0 && participants>0 && hs.childrenFreeWithAdult) lines.push({label:`${hs.title} — ${children} ${childWordFor(children)} (${L.homeStayChildFreeText ?? "free with an adult"})`,amount:0});
+    const hs = CONFIG.homestay;
+    const freeAge = hs.childFreeAge ?? 6;
+
+    if (participants > 0) {
+      const adultSub = (hs.adultBasePrice ?? 0) + Math.max(0, participants - 1) * (hs.additionalAdultPrice ?? 0);
+      lines.push({ label: `${hs.title} \u2014 ${participants} ${adultWord}`, amount: adultSub });
+      total += adultSub;
+    }
+
+    if (children > 0) {
+      const ages = getChildAges();
+      let chargeable = 0;
+      let free = 0;
+      for (let i = 0; i < children; i++) {
+        const age = ages[i];
+        if (age !== null && age !== undefined && age <= freeAge) free += 1;
+        else chargeable += 1;
+      }
+      if (chargeable > 0) {
+        const childSub = chargeable * (hs.childPrice ?? 0);
+        const rangeText = (L.homeStayAgedRangeText ?? "(age {from}-18)").replace("{from}", String(freeAge + 1));
+        lines.push({ label: `${hs.title} \u2014 ${chargeable} ${childWordFor(chargeable)} ${rangeText}`, amount: childSub });
+        total += childSub;
+      }
+      if (free > 0) {
+        const freeAgeText = (L.homeStayFreeAgeText ?? "(age {age} & under, free)").replace("{age}", String(freeAge));
+        lines.push({ label: `${hs.title} \u2014 ${free} ${childWordFor(free)} ${freeAgeText}`, amount: 0 });
+      }
+    }
   }
+
   if (campingOn) {
-    const headcount=participants+children; const sub=CONFIG.camping.perPerson ? Number(CONFIG.camping.price||0)*headcount : Number(CONFIG.camping.price||0);
-    lines.push({label:CONFIG.camping.perPerson ? `${CONFIG.camping.title} × ${headcount}` : CONFIG.camping.title,amount:sub}); total+=sub;
+    const headcount = participants + children;
+    const sub = CONFIG.camping.perPerson ? CONFIG.camping.price * headcount : CONFIG.camping.price;
+    lines.push({ label: CONFIG.camping.perPerson ? `${CONFIG.camping.title} \u00d7 ${headcount}` : CONFIG.camping.title, amount: sub });
+    total += sub;
   }
-  return {lines,total,pkg};
+
+  return { lines, total, pkg };
 }
 
 function recalcTotal() {
@@ -388,7 +482,14 @@ function validatePage1() {
   document.getElementById("err_payment").classList.toggle("show", !payChosen);
   if (!payChosen) ok = false;
 
-
+  const childCount = parseInt(document.getElementById("f_children").value, 10) || 0;
+  if (childCount > 0) {
+    const ages = getChildAges();
+    document.querySelectorAll("#childAgesList input").forEach((inp, i) => {
+      inp.classList.toggle("invalid", ages[i] === null);
+    });
+    if (ages.some(a => a === null)) ok = false;
+  }
 
   return ok;
 }
@@ -464,6 +565,10 @@ function setupNavigation() {
       `Number of participants: ${participants}`,
       `Number of child: ${children}`
     ];
+    if (parseInt(children, 10) > 0) {
+      const ages = getChildAges().map(a => (a === null ? "?" : a));
+      lines.push(`Child ages: ${ages.join(", ")}`);
+    }
     lines.push(`Package: ${pkg.label} (\u20B9${pkg.price} per person)`);
     if (homestay !== null) lines.push(`Home stay: ${homestay}`);
     if (camping !== null) lines.push(`Camping: ${camping}`);
@@ -497,6 +602,7 @@ function setupClearForm() {
       if (decBtn) decBtn.disabled = true;
       if (incBtn) incBtn.disabled = false;
     });
+    renderChildAgeInputs(0);
     document.getElementById("detailUpi").hidden = true;
     document.getElementById("detailBank").hidden = true;
     document.getElementById("detailQr").hidden = true;

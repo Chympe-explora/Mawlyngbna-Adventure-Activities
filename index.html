@@ -79,7 +79,10 @@
             <input class="stepper-value" type="text" inputmode="numeric" id="f_children" name="children" value="0" readonly>
             <button type="button" data-action="inc" aria-label="Increase">&plus;</button>
           </div>
-          <div class="q-note child-note" id="childNote"></div>
+          <div class="child-ages-wrap" id="childAgesWrap" hidden>
+            <div class="q-note" id="childAgeNote"></div>
+            <div id="childAgesList"></div>
+          </div>
         </div>
       </div>
 
@@ -107,7 +110,6 @@
         <div class="card-body">
           <label class="q-label" id="campingTitle">Camping</label>
           <div class="q-note" id="campingNote"></div>
-          <div class="package-items" id="campingItems"></div>
           <div class="choice-row"><input type="radio" name="camping" value="yes" id="cp_yes"><label for="cp_yes" id="cp_yes_label"></label></div>
           <div class="choice-row"><input type="radio" name="camping" value="no" id="cp_no" checked><label for="cp_no" id="cp_no_label"></label></div>
         </div>
